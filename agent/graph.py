@@ -1,32 +1,23 @@
 from langgraph.graph import END, StateGraph
 
+from agent.executor import executor_node
+from agent.planner import planner_node
+from agent.router import router_node
 from agent.state import AgentState
-
-
-def router_node(state: AgentState) -> dict:
-    raise NotImplementedError("Router node not yet implemented")
-
-
-def planner_node(state: AgentState) -> dict:
-    raise NotImplementedError("Planner node not yet implemented")
-
-
-def executor_node(state: AgentState) -> dict:
-    raise NotImplementedError("Executor node not yet implemented")
-
-
-def verifier_node(state: AgentState) -> dict:
-    raise NotImplementedError("Verifier node not yet implemented")
-
-
-def writer_node(state: AgentState) -> dict:
-    raise NotImplementedError("Writer node not yet implemented")
+from agent.verifier import verifier_node
+from agent.writer import writer_node
 
 
 def route_after_router(state: AgentState) -> str:
     if state.get("complexity") == "simple":
         return "executor"
     return "planner"
+
+
+def route_after_executor(state: AgentState) -> str:
+    if state.get("complexity") == "simple":
+        return "writer"
+    return "verifier"
 
 
 def route_after_verifier(state: AgentState) -> str:
@@ -55,7 +46,11 @@ def build_graph() -> StateGraph:
     })
 
     graph.add_edge("planner", "executor")
-    graph.add_edge("executor", "verifier")
+
+    graph.add_conditional_edges("executor", route_after_executor, {
+        "writer": "writer",
+        "verifier": "verifier",
+    })
 
     graph.add_conditional_edges("verifier", route_after_verifier, {
         "writer": "writer",
@@ -65,3 +60,8 @@ def build_graph() -> StateGraph:
     graph.add_edge("writer", END)
 
     return graph
+
+
+def compile_graph():
+    graph = build_graph()
+    return graph.compile()
