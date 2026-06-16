@@ -61,7 +61,7 @@ class AgentEngine:
     Implements Plan-and-Execute with fast path, no LangGraph dependency.
     """
 
-    def __init__(self):
+    def __init__(self, memory: "MemoryManager | None" = None):
         from agent.router import router_node
         from agent.planner import planner_node
         from agent.executor import executor_node
@@ -73,9 +73,15 @@ class AgentEngine:
         self._executor = executor_node
         self._verifier = verifier_node
         self._writer = writer_node
+        self._memory = memory
 
     async def run(self, query: str) -> AgentResult:
         start = time.monotonic()
+
+        # Memory: record user message and recall relevant context
+        if self._memory:
+            await self._memory.on_user_message(query)
+
         state = AgentState(query=query)
 
         # Phase 1: Route
@@ -90,6 +96,10 @@ class AgentEngine:
 
         # Phase 3: Write final answer
         state = await self._writer(state)
+
+        # Memory: record agent response
+        if self._memory:
+            await self._memory.on_agent_response(state.final_answer)
 
         elapsed_ms = int((time.monotonic() - start) * 1000)
         return AgentResult(
