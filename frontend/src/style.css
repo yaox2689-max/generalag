@@ -1,68 +1,61 @@
+@import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Source+Sans+3:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&display=swap');
 @import "tailwindcss";
 
 @theme {
-  --color-warm-900: #1a1614;
-  --color-warm-800: #231f1b;
-  --color-warm-700: #2e2824;
-  --color-warm-600: #3a332e;
-  --color-warm-500: #5a504a;
-  --color-warm-400: #8a7e74;
-  --color-warm-300: #b8aa9e;
-  --color-warm-200: #d8cec4;
-  --color-warm-100: #f0e8e0;
+  --color-cream: #faf6f1;
+  --color-cream-dark: #f0ebe4;
+  --color-parchment: #e8e0d6;
+  --color-terracotta: #c75c3a;
+  --color-terracotta-light: #e8825f;
+  --color-terracotta-glow: rgba(199, 92, 58, 0.12);
+  --color-amber: #d4920a;
+  --color-amber-light: #f5b731;
+  --color-amber-glow: rgba(212, 146, 10, 0.1);
+  --color-sage: #5a8a6a;
+  --color-sage-light: #7db88e;
+  --color-sage-glow: rgba(90, 138, 106, 0.1);
+  --color-espresso: #2c1810;
+  --color-espresso-light: #4a3228;
+  --color-walnut: #6b4f3a;
+  --color-walnut-light: #8a6e55;
+  --color-sand: #b8a898;
+  --color-sand-light: #d4c8b8;
 
-  --color-amber-500: #f59e0b;
-  --color-amber-400: #fbbf24;
-  --color-amber-300: #fcd34d;
-  --color-amber-glow: rgba(245, 158, 11, 0.15);
-
-  --color-emerald-500: #10b981;
-  --color-emerald-glow: rgba(16, 185, 129, 0.12);
-
-  --color-rose-500: #f43f5e;
-
-  --font-sans: 'Inter', -apple-system, 'PingFang SC', 'Noto Sans SC', system-ui, sans-serif;
+  --font-display: 'DM Serif Display', Georgia, 'Noto Serif SC', serif;
+  --font-body: 'Source Sans 3', 'PingFang SC', 'Noto Sans SC', system-ui, sans-serif;
   --font-mono: 'JetBrains Mono', 'Fira Code', ui-monospace, monospace;
 }
 
-* {
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
-}
+* { box-sizing: border-box; margin: 0; padding: 0; }
 
 html, body, #app {
   height: 100%;
   width: 100%;
-  background: var(--color-warm-900);
-  color: var(--color-warm-200);
-  font-family: var(--font-sans);
+  font-family: var(--font-body);
   -webkit-font-smoothing: antialiased;
 }
 
 body {
   background:
-    radial-gradient(ellipse 80% 60% at 50% 0%, rgba(245,158,11,0.06) 0%, transparent 60%),
-    radial-gradient(ellipse 60% 50% at 80% 100%, rgba(16,185,129,0.04) 0%, transparent 50%),
-    var(--color-warm-900);
+    radial-gradient(ellipse 100% 80% at 30% 0%, rgba(199,92,58,0.06) 0%, transparent 50%),
+    radial-gradient(ellipse 80% 60% at 80% 100%, rgba(90,138,106,0.05) 0%, transparent 50%),
+    var(--color-cream);
+  color: var(--color-espresso);
 }
 
-::-webkit-scrollbar { width: 5px; }
+::-webkit-scrollbar { width: 6px; }
 ::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: var(--color-warm-600); border-radius: 3px; }
+::-webkit-scrollbar-thumb { background: var(--color-parchment); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: var(--color-sand); }
 
 @keyframes fadeInUp {
-  from { opacity: 0; transform: translateY(16px); }
+  from { opacity: 0; transform: translateY(20px); }
   to { opacity: 1; transform: translateY(0); }
 }
 
 @keyframes breathe {
-  0%, 100% { opacity: 0.6; }
-  50% { opacity: 1; }
-}
-
-@keyframes flowDash {
-  to { stroke-dashoffset: -20; }
+  0%, 100% { transform: scale(1); opacity: 0.8; }
+  50% { transform: scale(1.08); opacity: 1; }
 }
 
 @keyframes shimmer {
@@ -70,24 +63,20 @@ body {
   100% { background-position: 200% 0; }
 }
 
-@keyframes dotMove {
-  0% { offset-distance: 0%; }
-  100% { offset-distance: 100%; }
+@keyframes pulseRing {
+  0% { box-shadow: 0 0 0 0 rgba(199, 92, 58, 0.3); }
+  70% { box-shadow: 0 0 0 8px rgba(199, 92, 58, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(199, 92, 58, 0); }
 }
 
-.animate-fade-in-up {
-  animation: fadeInUp 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+@keyframes slideDown {
+  from { max-height: 0; opacity: 0; }
+  to { max-height: 500px; opacity: 1; }
 }
 
-.animate-breathe {
-  animation: breathe 2.5s ease-in-out infinite;
-}
-
-.shimmer {
-  background: linear-gradient(90deg, transparent, rgba(245,158,11,0.08), transparent);
-  background-size: 200% 100%;
-  animation: shimmer 2s infinite;
-}
+.animate-fade-in-up { animation: fadeInUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) both; }
+.animate-breathe { animation: breathe 2.5s ease-in-out infinite; }
+.animate-pulse-ring { animation: pulseRing 1.5s ease-out infinite; }
 
 .line-clamp-3 {
   display: -webkit-box;
@@ -96,35 +85,35 @@ body {
   overflow: hidden;
 }
 
-.markdown-body { line-height: 1.7; }
+.markdown-body { line-height: 1.75; color: var(--color-espresso); }
 .markdown-body h1, .markdown-body h2, .markdown-body h3 {
-  color: var(--color-warm-100);
-  font-weight: 600;
+  font-family: var(--font-display);
+  color: var(--color-espresso);
   margin: 1em 0 0.5em;
 }
-.markdown-body h2 { font-size: 1.15em; }
+.markdown-body h2 { font-size: 1.2em; }
 .markdown-body h3 { font-size: 1.05em; }
 .markdown-body p { margin: 0.4em 0; }
 .markdown-body code {
-  background: var(--color-warm-700);
+  background: var(--color-cream-dark);
   padding: 2px 6px;
   border-radius: 4px;
   font-family: var(--font-mono);
   font-size: 0.85em;
-  color: var(--color-amber-400);
+  color: var(--color-terracotta);
 }
 .markdown-body pre {
-  background: var(--color-warm-800);
-  border: 1px solid var(--color-warm-600);
+  background: var(--color-cream-dark);
+  border: 1px solid var(--color-parchment);
   border-radius: 8px;
   padding: 14px;
   overflow-x: auto;
   margin: 0.6em 0;
 }
-.markdown-body pre code { background: none; padding: 0; color: var(--color-warm-200); }
+.markdown-body pre code { background: none; padding: 0; color: var(--color-espresso); }
 .markdown-body ul, .markdown-body ol { padding-left: 1.4em; margin: 0.4em 0; }
-.markdown-body li { margin: 0.2em 0; line-height: 1.6; }
-.markdown-body strong { color: var(--color-warm-100); }
+.markdown-body li { margin: 0.2em 0; line-height: 1.7; }
+.markdown-body strong { color: var(--color-espresso); font-weight: 600; }
 .markdown-body table { border-collapse: collapse; width: 100%; margin: 0.6em 0; }
-.markdown-body th, .markdown-body td { border: 1px solid var(--color-warm-600); padding: 6px 10px; text-align: left; }
-.markdown-body th { background: var(--color-warm-700); font-weight: 600; font-size: 0.9em; }
+.markdown-body th, .markdown-body td { border: 1px solid var(--color-parchment); padding: 8px 12px; text-align: left; }
+.markdown-body th { background: var(--color-cream-dark); font-weight: 600; }

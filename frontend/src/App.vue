@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import AppLayout from './components/AppLayout.vue'
+import AgentStudio from './components/AgentStudio.vue'
 </script>
 
 <template>
-  <AppLayout />
+  <AgentStudio />
 </template>

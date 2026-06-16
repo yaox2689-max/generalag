@@ -1,10 +1,11 @@
 <script setup lang="ts">
 import { ref } from 'vue'
-import { Loader2, ArrowUp } from 'lucide-vue-next'
+import { ArrowUp, Loader2 } from 'lucide-vue-next'
 
 const props = defineProps<{ disabled: boolean }>()
 const emit = defineEmits<{ send: [query: string] }>()
 const input = ref('')
+const focused = ref(false)
 
 function handleSend() {
   const q = input.value.trim()
@@ -15,33 +16,36 @@ function handleSend() {
 </script>
 
 <template>
-  <div class="px-5 pb-5 pt-2 shrink-0">
+  <div class="shrink-0 pt-3 pb-1 animate-fade-in-up" style="animation-delay: 0.15s">
     <div
-      class="flex items-center gap-3 bg-warm-700/50 border border-warm-600/60 rounded-2xl px-4 py-3
-             focus-within:border-amber-500/40 focus-within:shadow-[0_0_20px_rgba(245,158,11,0.08)]
-             transition-all duration-300"
+      class="flex items-center gap-3 rounded-2xl border-2 px-4 py-3 transition-all duration-300"
+      :class="focused
+        ? 'bg-white border-terracotta/40 shadow-lg shadow-terracotta/8'
+        : 'bg-white/70 border-parchment hover:border-sand-light'"
     >
       <input
         v-model="input"
         @keydown.enter.prevent="handleSend"
+        @focus="focused = true"
+        @blur="focused = false"
         :disabled="disabled"
         placeholder="Ask anything..."
-        class="flex-1 bg-transparent text-sm text-warm-100 placeholder:text-warm-500 outline-none"
+        class="flex-1 bg-transparent text-sm text-espresso placeholder:text-sand outline-none"
       />
       <button
         @click="handleSend"
         :disabled="disabled || !input.trim()"
-        class="w-8 h-8 rounded-xl flex items-center justify-center shrink-0
+        class="w-9 h-9 rounded-xl flex items-center justify-center shrink-0
                transition-all duration-200 cursor-pointer
                disabled:opacity-30 disabled:cursor-not-allowed
-               enabled:bg-amber-500 enabled:hover:bg-amber-400 enabled:active:scale-90
-               shadow-[0_2px_8px_rgba(245,158,11,0.25)]"
+               enabled:bg-terracotta enabled:hover:bg-terracotta-light enabled:active:scale-90
+               shadow-md shadow-terracotta/20"
       >
-        <Loader2 v-if="disabled" :size="15" class="text-warm-900 animate-spin" />
-        <ArrowUp v-else :size="15" :class="input.trim() ? 'text-warm-900' : 'text-warm-500'" />
+        <Loader2 v-if="disabled" :size="16" class="text-white animate-spin" />
+        <ArrowUp v-else :size="16" :class="input.trim() ? 'text-white' : 'text-sand'" />
       </button>
     </div>
-    <p class="text-center text-[10px] text-warm-500/60 mt-2.5">
+    <p class="text-center text-[10px] text-sand mt-2">
       General Agent v0.1 &mdash; Self-built Plan-and-Execute Engine
     </p>
   </div>
