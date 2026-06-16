@@ -16,13 +16,8 @@ function handleSend() {
 </script>
 
 <template>
-  <div class="shrink-0 pt-3 pb-1 animate-fade-in-up" style="animation-delay: 0.15s">
-    <div
-      class="flex items-center gap-3 rounded-2xl border-2 px-4 py-3 transition-all duration-300"
-      :class="focused
-        ? 'bg-white border-terracotta/40 shadow-lg shadow-terracotta/8'
-        : 'bg-white/70 border-parchment hover:border-sand-light'"
-    >
+  <div class="command-input-wrap">
+    <div class="command-input-bar" :class="{ focused }">
       <input
         v-model="input"
         @keydown.enter.prevent="handleSend"
@@ -30,23 +25,85 @@ function handleSend() {
         @blur="focused = false"
         :disabled="disabled"
         placeholder="Ask anything..."
-        class="flex-1 bg-transparent text-sm text-espresso placeholder:text-sand outline-none"
+        class="command-input"
       />
       <button
         @click="handleSend"
         :disabled="disabled || !input.trim()"
-        class="w-9 h-9 rounded-xl flex items-center justify-center shrink-0
-               transition-all duration-200 cursor-pointer
-               disabled:opacity-30 disabled:cursor-not-allowed
-               enabled:bg-terracotta enabled:hover:bg-terracotta-light enabled:active:scale-90
-               shadow-md shadow-terracotta/20"
+        class="send-btn"
       >
         <Loader2 v-if="disabled" :size="16" class="text-white animate-spin" />
         <ArrowUp v-else :size="16" :class="input.trim() ? 'text-white' : 'text-sand'" />
       </button>
     </div>
-    <p class="text-center text-[10px] text-sand mt-2">
-      General Agent v0.1 &mdash; Self-built Plan-and-Execute Engine
-    </p>
   </div>
 </template>
+
+<style scoped>
+.command-input-wrap {
+  width: 100%;
+}
+
+.command-input-bar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: #ffffff;
+  border: 1.5px solid #e5e5e5;
+  border-radius: 12px;
+  padding: 10px 16px;
+  transition: all 0.25s ease;
+}
+
+.command-input-bar.focused {
+  border-color: rgba(199, 92, 58, 0.4);
+  box-shadow: 0 0 0 3px rgba(199, 92, 58, 0.08);
+}
+
+.command-input {
+  flex: 1;
+  background: transparent;
+  border: none;
+  outline: none;
+  font-size: 14px;
+  color: #2c1810;
+  font-family: inherit;
+}
+
+.command-input::placeholder {
+  color: #b8a898;
+}
+
+.send-btn {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  cursor: pointer;
+  border: none;
+  background: #e5e5e5;
+  color: #b8a898;
+  transition: all 0.2s ease;
+}
+
+.send-btn:not(:disabled) {
+  background: #c75c3a;
+  box-shadow: 0 2px 8px rgba(199, 92, 58, 0.25);
+}
+
+.send-btn:not(:disabled):hover {
+  background: #e8825f;
+}
+
+.send-btn:not(:disabled):active {
+  transform: scale(0.92);
+}
+
+.send-btn:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+</style>
