@@ -13,17 +13,19 @@ export interface AgentResponse {
   elapsed_ms: number
 }
 
-export interface ChatMessage {
+export type NodeStatus = 'idle' | 'running' | 'done'
+
+export interface FlowNode {
   id: string
-  role: 'user' | 'assistant'
-  content: string
-  timestamp: number
-  agentResponse?: AgentResponse
-  loading?: boolean
+  label: string
+  x: number
+  y: number
+  status: NodeStatus
+  detail?: string
 }
 
-export interface AgentStep {
-  name: string
-  status: 'pending' | 'running' | 'done'
-  detail?: string
+export interface FlowEdge {
+  from: string
+  to: string
+  active: boolean
 }
