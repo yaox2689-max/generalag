@@ -3,7 +3,7 @@ import json
 from langchain_core.messages import HumanMessage, SystemMessage
 
 from agent.llm import get_llm
-from agent.state import AgentState
+from agent.engine import AgentState
 from tools.registry import ToolRegistry
 
 PLANNER_PROMPT = """You are a task planner. Given a user query and available tools, decompose the query into a sequence of subtasks.
@@ -42,8 +42,8 @@ def _format_tool_descriptions() -> str:
 
 async def planner_node(state: AgentState) -> dict:
     llm = get_llm()
-    query = state["query"]
-    domain = state.get("domain", "general")
+    query = state.query
+    domain = state.domain or "general"
 
     prompt = PLANNER_PROMPT.format(tool_descriptions=_format_tool_descriptions())
 

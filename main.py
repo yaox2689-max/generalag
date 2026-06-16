@@ -16,6 +16,7 @@ class QueryResponse(BaseModel):
     complexity: str
     sources: list[str]
     steps: list[dict]
+    elapsed_ms: int
 
 
 @app.get("/health")
@@ -25,33 +26,20 @@ async def health():
 
 @app.post("/query", response_model=QueryResponse)
 async def query_agent(req: QueryRequest):
-    from agent.graph import compile_graph
+    from agent.engine import AgentEngine
     from tools.registry import ToolRegistry
 
     ToolRegistry.discover()
-    graph = compile_graph()
-
-    initial_state = {
-        "query": req.query,
-        "domain": "",
-        "complexity": "",
-        "plan": [],
-        "current_step": 0,
-        "step_results": [],
-        "final_answer": "",
-        "sources": [],
-        "verification": {"is_sufficient": False, "gaps": [], "score": 0.0},
-        "retry_count": 0,
-    }
-
-    result = await graph.ainvoke(initial_state)
+    engine = AgentEngine()
+    result = await engine.run(req.query)
 
     return QueryResponse(
-        answer=result.get("final_answer", ""),
-        domain=result.get("domain", ""),
-        complexity=result.get("complexity", ""),
-        sources=result.get("sources", []),
-        steps=result.get("step_results", []),
+        answer=result.answer,
+        domain=result.domain,
+        complexity=result.complexity,
+        sources=result.sources,
+        steps=[{"task_id": s.task_id, "tool": s.tool, "output": s.output[:500]} for s in result.steps],
+        elapsed_ms=result.elapsed_ms,
     )
 
 

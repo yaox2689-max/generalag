@@ -4,7 +4,7 @@ import logging
 from langchain_core.messages import HumanMessage, SystemMessage
 
 from agent.llm import get_llm
-from agent.state import AgentState
+from agent.engine import AgentState
 from tools.registry import ToolRegistry
 
 logger = logging.getLogger(__name__)
@@ -33,9 +33,9 @@ def _format_previous_results(step_results: list) -> str:
 
 async def executor_node(state: AgentState) -> dict:
     llm = get_llm()
-    plan = state.get("plan", [])
-    current_step = state.get("current_step", 0)
-    step_results = list(state.get("step_results", []))
+    plan = state.plan
+    current_step = state.current_step
+    step_results = list(state.step_results)
 
     # Find next unexecuted step whose dependencies are met
     executed_ids = {r["task_id"] for r in step_results}

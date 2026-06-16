@@ -1,7 +1,7 @@
 from langchain_core.messages import HumanMessage, SystemMessage
 
 from agent.llm import get_llm
-from agent.state import AgentState
+from agent.engine import AgentState
 
 WRITER_PROMPT = """You are a professional answer writer. Given a user query and the execution results, write a clear, well-structured final answer.
 
@@ -29,9 +29,9 @@ def _format_results(step_results: list) -> str:
 
 async def writer_node(state: AgentState) -> dict:
     llm = get_llm(temperature=0.3)
-    query = state["query"]
-    domain = state.get("domain", "general")
-    step_results = state.get("step_results", [])
+    query = state.query
+    domain = state.domain or "general"
+    step_results = state.step_results
 
     prompt = WRITER_PROMPT.format(
         query=query,
