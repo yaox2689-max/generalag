@@ -1,0 +1,26 @@
+[
+  {
+    "id": "fin-001",
+    "query": "茅台2024年第三季度净利润是多少？",
+    "expected_answer": "贵州茅台2024年第三季度净利润约为XXX亿元，同比增长XX%。",
+    "domain": "finance",
+    "tags": ["财报", "利润", "白酒"],
+    "expected_tools": ["financial_report"]
+  },
+  {
+    "id": "fin-002",
+    "query": "比亚迪和特斯拉2024年营收对比",
+    "expected_answer": "需要分别获取比亚迪和特斯拉2024年营收数据，进行横向对比分析。",
+    "domain": "finance",
+    "tags": ["营收", "对比", "新能源"],
+    "expected_tools": ["financial_report", "web_search"]
+  },
+  {
+    "id": "fin-003",
+    "query": "A股市盈率最低的股票有哪些？",
+    "expected_answer": "应列出A股中市盈率最低的几只股票，包含股票代码、名称和具体PE值。",
+    "domain": "finance",
+    "tags": ["估值", "PE", "筛选"],
+    "expected_tools": ["web_search"]
+  }
+]
