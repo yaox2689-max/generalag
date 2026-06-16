@@ -5,9 +5,21 @@ from config import settings
 
 app = FastAPI(title="General Agent", version="0.1.0")
 
+# Shared memory manager (per-process singleton)
+_memory_manager = None
+
+
+def get_memory():
+    global _memory_manager
+    if _memory_manager is None:
+        from memory.manager import MemoryManager
+        _memory_manager = MemoryManager()
+    return _memory_manager
+
 
 class QueryRequest(BaseModel):
     query: str
+    use_memory: bool = True
 
 
 class QueryResponse(BaseModel):
@@ -30,7 +42,8 @@ async def query_agent(req: QueryRequest):
     from tools.registry import ToolRegistry
 
     ToolRegistry.discover()
-    engine = AgentEngine()
+    memory = get_memory() if req.use_memory else None
+    engine = AgentEngine(memory=memory)
     result = await engine.run(req.query)
 
     return QueryResponse(
