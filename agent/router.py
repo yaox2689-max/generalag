@@ -1,7 +1,7 @@
 from langchain_core.messages import HumanMessage, SystemMessage
 
 from agent.llm import get_llm
-from agent.state import AgentState
+from agent.engine import AgentState
 
 DOMAIN_KEYWORDS = {
     "finance": ["财报", "利润", "营收", "股价", "股票", "基金", "PE", "ROE", "净利", "毛利", "营收", "资产", "负债", "现金流"],
@@ -69,7 +69,7 @@ Output ONLY the JSON object, no other text."""
 
 
 async def router_node(state: AgentState) -> dict:
-    query = state["query"]
+    query = state.query
 
     # Try rule-based first
     route = rule_based_route(query)

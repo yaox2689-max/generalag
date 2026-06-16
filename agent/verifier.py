@@ -3,7 +3,7 @@ import json
 from langchain_core.messages import HumanMessage, SystemMessage
 
 from agent.llm import get_llm
-from agent.state import AgentState
+from agent.engine import AgentState
 
 VERIFIER_PROMPT = """You are a result verifier. Given a user query and the execution results, assess whether the results are sufficient to answer the query.
 
@@ -44,10 +44,10 @@ def _format_results(step_results: list) -> str:
 
 async def verifier_node(state: AgentState) -> dict:
     llm = get_llm()
-    query = state["query"]
-    plan = state.get("plan", [])
-    step_results = state.get("step_results", [])
-    retry_count = state.get("retry_count", 0)
+    query = state.query
+    plan = state.plan
+    step_results = state.step_results
+    retry_count = state.retry_count
 
     prompt = VERIFIER_PROMPT.format(
         query=query,
