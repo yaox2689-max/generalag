@@ -16,9 +16,9 @@ wheels/
 *.swp
 *.swo
 
-# Data
-data/
-*.db
+# Data (runtime only — golden samples and reports are tracked)
+data/milvus.db
+data/*.db
 
 # OS
 .DS_Store
