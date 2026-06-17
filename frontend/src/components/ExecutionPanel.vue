@@ -131,6 +131,11 @@ function renderedAnswer(text: string) {
           </div>
         </div>
         <div class="result-answer markdown-body" v-html="renderedAnswer(response.answer)"></div>
+
+        <!-- Sources -->
+        <div v-if="response.sources.length" class="result-sources">
+          <span v-for="src in response.sources" :key="src" class="source-tag">{{ src }}</span>
+        </div>
       </div>
     </Transition>
 
@@ -252,6 +257,13 @@ function renderedAnswer(text: string) {
   display: flex; align-items: center; gap: 4px;
 }
 .result-answer { font-size: 14px; line-height: 1.75; color: #2c1810; }
+.result-sources { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 12px; }
+.source-tag {
+  font-size: 10px; color: #c75c3a;
+  padding: 3px 10px; border-radius: 100px;
+  background: rgba(199,92,58,0.08);
+  border: 1px solid rgba(199,92,58,0.15);
+}
 
 /* Loading bar */
 .loading-bar {
