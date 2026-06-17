@@ -9,6 +9,11 @@ from tools.registry import ToolRegistry
 
 logger = logging.getLogger(__name__)
 
+FALLBACK_MAP = {
+    "rag_search": "web_search",
+    "web_search": "rag_search",
+}
+
 EXECUTOR_PROMPT = """You are a tool executor. Given a subtask description and a tool, determine the correct arguments to call the tool.
 
 Tool: {tool_name}
@@ -93,6 +98,15 @@ async def executor_node(state: AgentState) -> dict:
 
                 # Execute the tool
                 result = await tool(**args)
+
+                # Fallback: if tool failed and has a fallback, try it
+                if not result.success and tool_name in FALLBACK_MAP:
+                    fallback_name = FALLBACK_MAP[tool_name]
+                    fallback_tool = ToolRegistry.get(fallback_name)
+                    if fallback_tool:
+                        logger.info("Tool %s failed, trying fallback %s", tool_name, fallback_name)
+                        result = await fallback_tool(**args)
+
                 step_results.append({
                     "task_id": task_id,
                     "tool": tool_name,

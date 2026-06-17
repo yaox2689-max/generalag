@@ -8,15 +8,16 @@ class TestRuleBasedRoute:
         """Short finance query → simple"""
         result = rule_based_route("茅台利润多少")
         assert result is not None
-        domain, complexity = result
+        domain, complexity, confidence = result
         assert domain == "finance"
         assert complexity == "simple"
+        assert confidence >= 0.7
 
     def test_finance_simple_keyword(self):
         """Finance + simple keyword → simple"""
         result = rule_based_route("茅台今天股价是多少")
         assert result is not None
-        domain, complexity = result
+        domain, complexity, confidence = result
         assert domain == "finance"
         assert complexity == "simple"
 
@@ -24,7 +25,7 @@ class TestRuleBasedRoute:
         """Short QA query → simple"""
         result = rule_based_route("什么是RAG")
         assert result is not None
-        domain, complexity = result
+        domain, complexity, confidence = result
         assert domain == "qa"
         assert complexity == "simple"
 
@@ -42,6 +43,13 @@ class TestRuleBasedRoute:
         """Long finance query → None (complex, needs LLM)"""
         result = rule_based_route("请帮我详细分析贵州茅台2024年第三季度的财务报表，包括营收、净利润、毛利率等关键指标，并与去年同期对比")
         assert result is None
+
+    def test_tech_domain(self):
+        """Tech domain keyword → detected"""
+        result = rule_based_route("Python编程怎么学")
+        assert result is not None
+        domain, complexity, confidence = result
+        assert domain == "tech"
 
 
 @pytest.mark.asyncio
