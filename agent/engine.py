@@ -1,10 +1,13 @@
 import logging
 import time
 from dataclasses import dataclass, field
+from typing import Callable, Awaitable
 
 logger = logging.getLogger(__name__)
 
 MAX_RETRIES = 3
+
+EventCallback = Callable[[dict], Awaitable[None]] | None
 
 
 @dataclass
@@ -61,7 +64,7 @@ class AgentEngine:
     Implements Plan-and-Execute with fast path, no LangGraph dependency.
     """
 
-    def __init__(self, memory: "MemoryManager | None" = None):
+    def __init__(self, memory: "MemoryManager | None" = None, on_event: EventCallback = None):
         from agent.router import router_node
         from agent.planner import planner_node
         from agent.executor import executor_node
@@ -74,6 +77,7 @@ class AgentEngine:
         self._verifier = verifier_node
         self._writer = writer_node
         self._memory = memory
+        self._on_event = on_event
 
     async def run(self, query: str) -> AgentResult:
         start = time.monotonic()
@@ -85,7 +89,9 @@ class AgentEngine:
         state = AgentState(query=query)
 
         # Phase 1: Route
+        await self._emit("step_start", "Router")
         state = await self._route(state)
+        await self._emit("step_done", "Router", f"Domain: {state.domain} | {state.complexity}")
         logger.info("Routed: domain=%s complexity=%s", state.domain, state.complexity)
 
         # Phase 2: Execute (with or without planning)
@@ -95,7 +101,9 @@ class AgentEngine:
             state = await self._execute_complex(state)
 
         # Phase 3: Write final answer
+        await self._emit("step_start", "Writer")
         state = await self._writer(state)
+        await self._emit("step_done", "Writer", "Answer generated")
 
         # Memory: record agent response
         if self._memory:
@@ -119,28 +127,39 @@ class AgentEngine:
     async def _execute_simple(self, state: AgentState) -> AgentState:
         """Fast path: single tool call, skip planning and verification."""
         state.plan = [SubTask(id=1, description=state.query, tool=None)]
+        await self._emit("step_start", "Executor")
         updates = await self._executor(state)
-        return self._merge(state, updates)
+        state = self._merge(state, updates)
+        tool_names = ", ".join(set(s.tool for s in state.step_results)) or "llm"
+        await self._emit("step_done", "Executor", f"Tools: {tool_names}")
+        return state
 
     async def _execute_complex(self, state: AgentState) -> AgentState:
         """Full path: plan → execute → verify loop."""
         # Plan
+        await self._emit("step_start", "Planner")
         updates = await self._planner(state)
         state = self._merge(state, updates)
+        await self._emit("step_done", "Planner", f"{len(state.plan)} subtask(s)")
 
         # Execute-verify loop
         for attempt in range(MAX_RETRIES):
             # Execute all steps
+            await self._emit("step_start", "Executor")
             while True:
                 executed_before = len(state.step_results)
                 updates = await self._executor(state)
                 state = self._merge(state, updates)
                 if len(state.step_results) == executed_before:
-                    break  # no more steps to execute
+                    break
+            tool_names = ", ".join(set(s.tool for s in state.step_results)) or "llm"
+            await self._emit("step_done", "Executor", f"Tools: {tool_names}")
 
             # Verify
+            await self._emit("step_start", "Verifier")
             updates = await self._verifier(state)
             state = self._merge(state, updates)
+            await self._emit("step_done", "Verifier", f"Score: {state.verification.score:.1f}")
 
             if state.verification.is_sufficient:
                 logger.info("Verification passed on attempt %d", attempt + 1)
@@ -158,3 +177,7 @@ class AgentEngine:
             if hasattr(state, key):
                 setattr(state, key, value)
         return state
+
+    async def _emit(self, event_type: str, step: str, detail: str = "") -> None:
+        if self._on_event:
+            await self._on_event({"type": event_type, "step": step, "detail": detail})

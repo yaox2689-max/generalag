@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, nextTick } from 'vue'
-import { sendQuery } from '../api/agent'
+import { sendQueryStream } from '../api/agent'
 import type { AgentResponse } from '../types'
 import ExecutionPanel from './ExecutionPanel.vue'
 import CommandInput from './CommandInput.vue'
@@ -22,7 +22,6 @@ const isRunning = ref(false)
 const scrollEl = ref<HTMLElement>()
 
 const uid = () => Math.random().toString(36).slice(2, 8)
-const sleep = (ms: number) => new Promise(r => setTimeout(r, ms))
 
 function scrollToBottom() {
   nextTick(() => { if (scrollEl.value) scrollEl.value.scrollTop = scrollEl.value.scrollHeight })
@@ -34,34 +33,6 @@ const stepMeta: Record<string, { icon: any; desc: string }> = {
   Executor: { icon: Play,        desc: 'Calling tools and executing steps' },
   Verifier: { icon: ShieldCheck, desc: 'Verifying result completeness' },
   Writer:   { icon: PenLine,     desc: 'Generating structured answer' },
-}
-
-async function animatePipeline(turn: Turn, response: AgentResponse) {
-  const all = ['Router', 'Planner', 'Executor', 'Verifier', 'Writer']
-  const steps = response.complexity === 'simple' ? ['Router', 'Executor', 'Writer'] : all
-  turn.activeStep = ''
-  turn.doneSteps = []
-  turn.complexity = response.complexity
-  turn.stepDetails = {}
-
-  for (const s of steps) {
-    turn.activeStep = s
-    scrollToBottom()
-    await sleep(500 + Math.random() * 400)
-    turn.activeStep = ''
-    turn.doneSteps = [...turn.doneSteps, s]
-
-    // Attach step detail from response
-    if (s === 'Router') turn.stepDetails[s] = `Domain: ${response.domain} | ${response.complexity}`
-    if (s === 'Planner') turn.stepDetails[s] = `${response.steps.length} subtask(s) planned`
-    if (s === 'Executor') {
-      const tools = [...new Set(response.steps.map(st => st.tool))].join(', ')
-      turn.stepDetails[s] = `Tools: ${tools}`
-    }
-    if (s === 'Verifier') turn.stepDetails[s] = 'Result verified'
-    if (s === 'Writer') turn.stepDetails[s] = `Answer generated (${(response.elapsed_ms / 1000).toFixed(1)}s)`
-    scrollToBottom()
-  }
 }
 
 async function handleSend(query: string) {
@@ -76,10 +47,31 @@ async function handleSend(query: string) {
   scrollToBottom()
 
   try {
-    const response = await sendQuery(query)
-    turn.response = response
-    await animatePipeline(turn, response)
-    turn.loading = false
+    await sendQueryStream(query, (event) => {
+      if (event.type === 'step_start' && event.step) {
+        turn.activeStep = event.step
+        scrollToBottom()
+      } else if (event.type === 'step_done' && event.step) {
+        turn.activeStep = ''
+        if (!turn.doneSteps.includes(event.step)) {
+          turn.doneSteps = [...turn.doneSteps, event.step]
+        }
+        if (event.detail) turn.stepDetails[event.step] = event.detail
+        scrollToBottom()
+      } else if (event.type === 'final_answer') {
+        turn.response = {
+          answer: event.answer || '',
+          domain: event.domain || '',
+          complexity: event.complexity || '',
+          sources: event.sources || [],
+          steps: event.steps || [],
+          elapsed_ms: event.elapsed_ms || 0,
+        }
+        turn.complexity = event.complexity || ''
+        turn.loading = false
+        scrollToBottom()
+      }
+    })
   } catch (err: any) {
     turn.response = {
       answer: `Error: ${err.message}. Is the backend running on :8000?`,
